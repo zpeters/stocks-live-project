@@ -7,7 +7,7 @@ OK 2. Ingest stock quote data from an API.
         Try different intervals and periods for the API, you want the highest possible resolution for your custom aggregations. What are its limits?
         Using Rust’s Option and Result types, how can you handle API and connection errors without panicking?
 
-3. Use command-line parameters to pass in the stock symbols and “from” date.
+OK 3. Use command-line parameters to pass in the stock symbols and “from” date.
         The Rust standard library offers a way to access command line arguments, but …
         can a third-party crate make your life easier?
 

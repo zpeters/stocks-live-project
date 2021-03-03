@@ -1,9 +1,8 @@
 use chrono::DateTime;
-use clap::{App, Arg};
-use std::error::Error;
+use clap::{values_t, App, Arg};
 use yahoo_finance_api as yahoo;
 
-fn get_quote(ticker: &str, period: &str) -> Result<String, Box<dyn Error>> {
+fn get_quote(ticker: &str, period: &str) -> Result<String, String> {
     let provider = yahoo::YahooConnector::new();
 
     match provider.get_quote_range(ticker, "1m", period) {
@@ -12,24 +11,25 @@ fn get_quote(ticker: &str, period: &str) -> Result<String, Box<dyn Error>> {
                 "{} quotes for {} are: {:?}",
                 ticker, period, quotes
             )),
-            Err(e) => {
-                eprintln!("Inner error");
-                return Err(Box::new(e));
-            }
+            Err(e) => Err(format!("Unknown error: {:?}", e)),
         },
-        Err(e) => {
-            eprintln!("Ticker '{}' not found", &ticker);
-            return Err(Box::new(e));
-        }
+        Err(e) => Err(format!("Ticker '{}' not found. {:?}", &ticker, e)),
     }
 }
 
-// TODO implement
-// see from_date_validator
-// use rfc3339
-// https://rust-lang-nursery.github.io/rust-cookbook/datetime/parse.html
-fn from_to_date(_from_date: &str) -> String {
-    todo!();
+fn from_to_date(from_date: &str) -> Result<String, String> {
+    match DateTime::parse_from_rfc3339(&from_date) {
+        Ok(parsed) => {
+            // how many days ago is this (diff)
+            // return formatted string 'Nd' for 'N' days
+            let now = chrono::Local::now();
+            let now_fixed = now.with_timezone(now.offset());
+            let diff = now_fixed - parsed;
+            let num_days = diff.num_days();
+            Ok(format!("{}d", num_days))
+        }
+        Err(e) => Err(format!("Date parsing error: {:?}", e)),
+    }
 }
 
 fn from_date_validator(datetime: String) -> Result<(), String> {
@@ -48,6 +48,7 @@ fn main() {
             Arg::with_name("stocks")
                 .required(true)
                 .help("the stock you want")
+                .min_values(1)
                 .index(1),
         )
         .arg(
@@ -61,18 +62,16 @@ fn main() {
         )
         .get_matches();
 
-    // TODO stocks should get a list
-    // TODO calculate date to # days
-    // TODO give date example
-    // validate date
     let from = matches.value_of("from").unwrap();
-    let stocks = matches.value_of("stocks").unwrap_or("APPL");
+    let stocks = values_t!(matches.values_of("stocks"), String).unwrap_or_else(|e| e.exit());
 
-    let date = from_to_date(&from);
+    let date = from_to_date(&from).unwrap();
 
-    match get_quote(&stocks, &date) {
-        Ok(q) => println!("Stock: {}", q),
-        Err(e) => println!("Could not retrieve stock information. Error {:?}", e),
+    for stock in &stocks {
+        match get_quote(&stock, &date) {
+            Ok(q) => println!("Stock: {}", q),
+            Err(e) => println!("Could not retrieve stock information. Error {:?}", e),
+        }
     }
 }
 
@@ -85,6 +84,30 @@ mod tests {
         let ticker = "AAPL";
         let period = "1h";
         let result = get_quote(ticker, period).unwrap();
-        assert!(result.contains("AAPL"));
+        assert!(result.contains("AAPL"), "result should contain stock name");
+    }
+
+    #[test]
+    fn test_from_to_date_bad_date() {
+        let input = "fjkdsa;fjkd";
+        let result = from_to_date(&input);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_from_to_date() {
+        let input = "2020-01-01T00:00:00Z";
+        let result = from_to_date(&input).unwrap();
+        assert!(result.contains("d"), "result should contain 'd' for 'days'")
+    }
+    #[test]
+    fn test_from_to_date_future() {
+        let input = "3020-01-01T00:00:00Z";
+        let result = from_to_date(&input).unwrap();
+        assert!(
+            result.contains("-"),
+            "result should contain '-' since it is in the future"
+        );
+        assert!(result.contains("d"), "result should contain 'd' for 'days'");
     }
 }
