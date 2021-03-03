@@ -1,5 +1,8 @@
-# Workflow
+# Notes
+this is from Mannings "Building a Stock-Tracking CLI With Async Streams in Rust" Live Project
 
+
+# TODO
 OK 1. Create a Rust binary application project with cargo.
 
 OK 2. Ingest stock quote data from an API.
