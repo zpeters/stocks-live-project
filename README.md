@@ -18,8 +18,8 @@ this is from Mannings "Building a Stock-Tracking CLI With Async Streams in Rust"
         can a third-party crate make your life easier? **OK**
 
 4. Calculate performance indicators for the given period.
-- A period is the time between the “from” date and the current date
-- Aggregate the closing (adjclose) prices and find their minimum (fn min(series: &[f64]) -> Option<`f64`>) and maximum (fn max(series: &[f64]) -> Option<`f64`>) across the period. What data structures and types from the standard library can you use?
+- **OK** A period is the time between the “from” date and the current date
+- **OK** Aggregate the closing (adjclose) prices and find their minimum (fn min(series: &[f64]) -> Option<`f64`>) and maximum (fn max(series: &[f64]) -> Option<`f64`>) across the period. What data structures and types from the standard library can you use?
 - Calculate a simple moving average over the entire series. Here is the recommended function interface: fn n_window_sma(n: usize, series: &[f64]) -> Option<Vec<`f64`>>, where the series parameter is a std::slice with one value per day.
  - Using the function interface fn price_diff(series: &[f64]) -> Option<(f64, f64)>, return two price differences: one as a percentage of the starting price, one as an absolute difference between the first and the last price of the period.
 
