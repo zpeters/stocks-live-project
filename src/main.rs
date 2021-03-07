@@ -2,6 +2,9 @@ use chrono::DateTime;
 use clap::{values_t, App, Arg};
 use yahoo_finance_api as yahoo;
 
+// TODO parse stock to some kind of struct, prices in a vect?
+// TODO get max and min (see 4.b.)
+
 fn get_quote(ticker: &str, period: &str) -> Result<String, String> {
     let provider = yahoo::YahooConnector::new();
 
@@ -85,6 +88,7 @@ mod tests {
         let period = "1h";
         let result = get_quote(ticker, period).unwrap();
         assert!(result.contains("AAPL"), "result should contain stock name");
+        dbg!(&result);
     }
 
     #[test]

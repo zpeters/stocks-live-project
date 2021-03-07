@@ -1,24 +1,27 @@
-# Notes
+# Readme
+
+## Notes
+
 this is from Mannings "Building a Stock-Tracking CLI With Async Streams in Rust" Live Project
 
+## TODO
 
-# TODO
-OK 1. Create a Rust binary application project with cargo.
+1. Create a Rust binary application project with cargo. **OK**
 
-OK 2. Ingest stock quote data from an API.
+2. Ingest stock quote data from an API.
         The crate yahoo_finance_api provides a great starting point. Focus on the crate’s blocking API for now and specify the blocking feature on import.
         Try different intervals and periods for the API, you want the highest possible resolution for your custom aggregations. What are its limits?
-        Using Rust’s Option and Result types, how can you handle API and connection errors without panicking?
+        Using Rust’s Option and Result types, how can you handle API and connection errors without panicking? **OK**
 
-OK 3. Use command-line parameters to pass in the stock symbols and “from” date.
+3. Use command-line parameters to pass in the stock symbols and “from” date.
         The Rust standard library offers a way to access command line arguments, but …
-        can a third-party crate make your life easier?
+        can a third-party crate make your life easier? **OK**
 
 4. Calculate performance indicators for the given period.
-        A period is the time between the “from” date and the current date
-        Aggregate the closing (adjclose) prices and find their minimum (fn min(series: &[f64]) -> Option<f64>) and maximum (fn max(series: &[f64]) -> Option<f64>) across the period. What data structures and types from the standard library can you use?
-        Calculate a simple moving average over the entire series. Here is the recommended function interface: fn n_window_sma(n: usize, series: &[f64]) -> Option<Vec<f64>>, where the series parameter is a std::slice with one value per day.
-        Using the function interface fn price_diff(series: &[f64]) -> Option<(f64, f64)>, return two price differences: one as a percentage of the starting price, one as an absolute difference between the first and the last price of the period.
+- A period is the time between the “from” date and the current date
+- Aggregate the closing (adjclose) prices and find their minimum (fn min(series: &[f64]) -> Option<`f64`>) and maximum (fn max(series: &[f64]) -> Option<`f64`>) across the period. What data structures and types from the standard library can you use?
+- Calculate a simple moving average over the entire series. Here is the recommended function interface: fn n_window_sma(n: usize, series: &[f64]) -> Option<Vec<`f64`>>, where the series parameter is a std::slice with one value per day.
+ - Using the function interface fn price_diff(series: &[f64]) -> Option<(f64, f64)>, return two price differences: one as a percentage of the starting price, one as an absolute difference between the first and the last price of the period.
 
 5. The company’s data pipeline expects a CSV file for input, so you decide to print the results in that format to stdout:
         Display numbers (the min/max prices, change, and 30-day-average) with at most two decimal places
@@ -39,5 +42,3 @@ OK 3. Use command-line parameters to pass in the stock symbols and “from” da
     2020-07-02T19:30:00+00:00,UBER,$30.68,-30.39%,$14.39,$44.73,$30.38
 
 6. Test with the following stock symbols: MSFT, GOOG, AAPL, UBER,IBM.
-
-
