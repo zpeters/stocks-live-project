@@ -12,31 +12,30 @@ struct Stock {
     quotes: Vec<yahoo::Quote>,
 }
 
-impl Stock {
-    fn min(&self) -> Option<f64> {
-        let mut min_found: Option<f64> = None;
-        for q in self.quotes.iter() {
-            if min_found.is_none() {
-                min_found = Some(q.adjclose);
-            }
-            if q.adjclose < min_found.unwrap() {
-                min_found = Some(q.adjclose);
-            }
+fn max(series: &[f64]) -> Option<f64> {
+    let mut max_found: Option<f64> = None;
+    for s in series.iter() {
+        if max_found.is_none() {
+            max_found = Some(*s);
         }
-        min_found
-    }
-    fn max(&self) -> Option<f64> {
-        let mut max_found: Option<f64> = None;
-        for q in self.quotes.iter() {
-            if max_found.is_none() {
-                max_found = Some(q.adjclose);
-            }
-            if q.adjclose > max_found.unwrap() {
-                max_found = Some(q.adjclose);
-            }
+        if *s > max_found.unwrap() {
+            max_found = Some(*s);
         }
-        max_found
     }
+    max_found
+}
+
+fn min(series: &[f64]) -> Option<f64> {
+    let mut min_found: Option<f64> = None;
+    for s in series.iter() {
+        if min_found.is_none() {
+            min_found = Some(*s);
+        }
+        if *s < min_found.unwrap() {
+            min_found = Some(*s);
+        }
+    }
+    min_found
 }
 
 fn get_quote(ticker: &str, period: &str) -> Result<Stock> {
@@ -144,42 +143,19 @@ mod tests {
     }
 
     #[test]
+    fn test_min_aggregate() {
+        let expected: f64 = 0.00001;
+        let input: &[f64] = &[0.123, 0.012, 0.00001];
+        let result = min(&input).unwrap();
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn test_max_aggregate() {
         let expected: f64 = 0.123;
-        let input = Stock {
-            ticker: String::from("MyFakeStock"),
-            quotes: vec![
-                yahoo::Quote {
-                    timestamp: 0000000,
-                    open: 1.0,
-                    high: 1.0,
-                    low: 1.0,
-                    volume: 1,
-                    close: 1.0,
-                    adjclose: 0.123,
-                },
-                yahoo::Quote {
-                    timestamp: 0000001,
-                    open: 22.1234,
-                    high: 184.00,
-                    low: 0.01,
-                    volume: 1,
-                    close: 1.0,
-                    adjclose: 0.012,
-                },
-                yahoo::Quote {
-                    timestamp: 0000002,
-                    open: 1.0,
-                    high: 1.0,
-                    low: 3.0,
-                    volume: 1,
-                    close: 1.0,
-                    adjclose: 0.00001,
-                },
-            ],
-        };
-
-        let result = input.max().unwrap();
+        let input: &[f64] = &[0.123, 0.012, 0.00001];
+        let result = max(&input).unwrap();
 
         assert_eq!(result, expected);
     }
