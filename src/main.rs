@@ -12,6 +12,19 @@ struct Stock {
     quotes: Vec<yahoo::Quote>,
 }
 
+fn n_window_sma(n: usize, series: &[f64]) -> Option<Vec<f64>> {
+    if !series.is_empty() && n > 1 {
+        Some(
+            series
+                .windows(n)
+                .map(|w| w.iter().sum::<f64>() / w.len() as f64)
+                .collect(),
+        )
+    } else {
+        None
+    }
+}
+
 fn max(series: &[f64]) -> Option<f64> {
     let mut max_found: Option<f64> = None;
     for s in series.iter() {
@@ -158,5 +171,20 @@ mod tests {
         let result = max(&input).unwrap();
 
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_n_window_sma() {
+        let input_usize: usize = 3;
+        let input_series: &[f64] = &[1.0, 2.0, 3.5, 4.5, 12.2];
+        let expected = Some(vec![
+            2.1666666666666665,
+            3.3333333333333335,
+            6.733333333333333,
+        ]);
+
+        let actual = n_window_sma(input_usize, input_series);
+
+        assert_eq!(actual, expected);
     }
 }
