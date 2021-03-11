@@ -12,6 +12,22 @@ struct Stock {
     quotes: Vec<yahoo::Quote>,
 }
 
+fn price_diff(series: &[f64]) -> Option<(f64, f64)> {
+    //return two price differences: one
+    // as a percentage of the starting price,
+    // one as an absolute difference between the
+    //first and the last price of the period.
+    if !series.is_empty() {
+        let first_price = series.first().unwrap();
+        let last_price = series.last().unwrap();
+        let abs_diff = last_price - first_price;
+        let percent_diff = abs_diff / first_price * 100.0;
+        Some((percent_diff, abs_diff))
+    } else {
+        None
+    }
+}
+
 fn n_window_sma(n: usize, series: &[f64]) -> Option<Vec<f64>> {
     if !series.is_empty() && n > 1 {
         Some(
@@ -186,5 +202,18 @@ mod tests {
         let actual = n_window_sma(input_usize, input_series);
 
         assert_eq!(actual, expected);
+    }
+
+    // TODO implement
+    #[test]
+    fn test_price_diff() {
+        let input_series: &[f64] = &[1.0, 2.0, 3.5, 4.5, 12.2];
+        let expected_percentage = 1120.0;
+        let expected_absolute = 11.2;
+        let expected = Some((expected_percentage, expected_absolute));
+
+        let result = price_diff(input_series);
+
+        assert_eq!(result, expected)
     }
 }
