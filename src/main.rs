@@ -98,6 +98,30 @@ fn from_date_validator(datetime: String) -> Result<(), String> {
     }
 }
 
+fn generate_report_line(start_date: &str, ticker: &str, series: &[f64]) -> String {
+    let precision_dollars = 2;
+    let precision_percent = 3;
+    let last_close_price = series.last().unwrap();
+    let (percent_diff, _abs_diff) = price_diff(&series).unwrap();
+    let min = min(&series).unwrap();
+    let max = max(&series).unwrap();
+    let thirty_day_window = n_window_sma(30, &series).unwrap();
+    let last_thirty_day_window = thirty_day_window.last().unwrap();
+
+    format!(
+        "{2},{3},${4:.0$},{5:.1$}%,${6:.0$},${7:.0$},${8:.0$}",
+        precision_dollars,
+        precision_percent,
+        start_date,
+        ticker,
+        last_close_price,
+        percent_diff,
+        min,
+        max,
+        last_thirty_day_window
+    )
+}
+
 fn main() {
     let matches = App::new("Stonks")
         .version("0.1.0")
@@ -123,12 +147,17 @@ fn main() {
 
     let from = matches.value_of("from").unwrap();
     let stocks = values_t!(matches.values_of("stocks"), String).unwrap_or_else(|e| e.exit());
-
     let date = from_to_date(&from).unwrap();
 
+    // TODO move this to its own function
+    println!("period start,symbol,price,change %,min,max,30d avg");
     for stock in &stocks {
         match get_quote(&stock, &date) {
-            Ok(q) => println!("Stock: {:?}", q),
+            Ok(q) => {
+                let close_series: &[f64] = &q.quotes.iter().map(|x| x.close).collect::<Vec<f64>>();
+                let report_line = generate_report_line(&from, &stock, &close_series);
+                println!("{}", report_line);
+            }
             Err(e) => println!("Could not retrieve stock information. Error {:?}", e),
         }
     }
@@ -204,7 +233,6 @@ mod tests {
         assert_eq!(actual, expected);
     }
 
-    // TODO implement
     #[test]
     fn test_price_diff() {
         let input_series: &[f64] = &[1.0, 2.0, 3.5, 4.5, 12.2];
@@ -215,5 +243,22 @@ mod tests {
         let result = price_diff(input_series);
 
         assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn test_generate_report_line() {
+        let input_ticker = "XYZ";
+        let input_date = "2020-07-02T19:30:00+00:00";
+        let input_series: &[f64] = &[
+            1.0, 2.0, 3.5, 4.5, 12.2, 1.0, 2.0, 3.5, 4.5, 12.2, 1.0, 2.0, 3.5, 4.5, 12.2, 1.0, 2.0,
+            3.5, 4.5, 12.2, 1.0, 2.0, 3.5, 4.5, 12.2, 1.0, 2.0, 3.5, 4.5, 12.2, 1.0, 2.0, 3.5, 4.5,
+            12.2,
+        ];
+
+        let expected = "2020-07-02T19:30:00+00:00,XYZ,$12.20,1120.000%,$1.00,$12.20,$4.64";
+
+        let actual = generate_report_line(&input_date, &input_ticker, &input_series);
+
+        assert_eq!(expected, actual);
     }
 }

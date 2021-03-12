@@ -23,7 +23,7 @@ this is from Mannings "Building a Stock-Tracking CLI With Async Streams in Rust"
 - **OK** Calculate a simple moving average over the entire series. Here is the recommended function interface: fn n_window_sma(n: usize, series: &[f64]) -> Option<Vec<`f64`>>, where the series parameter is a std::slice with one value per day.
  - **OK**  fsUsing the function interface fn price_diff(series: &[f64]) -> Option<(f64, f64)>, return two price differences: one as a percentage of the starting price, one as an absolute difference between the first and the last price of the period.
 
-5. The company’s data pipeline expects a CSV file for input, so you decide to print the results in that format to stdout:
+5. *OK* The company’s data pipeline expects a CSV file for input, so you decide to print the results in that format to stdout:
         Display numbers (the min/max prices, change, and 30-day-average) with at most two decimal places
         Use stderr to communicate any errors
         The following columns are important to the company:
@@ -41,4 +41,4 @@ this is from Mannings "Building a Stock-Tracking CLI With Async Streams in Rust"
     2020-07-02T19:30:00+00:00,AAPL,$364.12,79.07%,$192.88,$371.38,$363.40
     2020-07-02T19:30:00+00:00,UBER,$30.68,-30.39%,$14.39,$44.73,$30.38
 
-6. Test with the following stock symbols: MSFT, GOOG, AAPL, UBER,IBM.
+6. *OK* Test with the following stock symbols: MSFT, GOOG, AAPL, UBER,IBM.
