@@ -4,41 +4,41 @@
 
 this is from Mannings "Building a Stock-Tracking CLI With Async Streams in Rust" Live Project
 
-## TODO
+## TODO - Milestone 2
 
-1. Create a Rust binary application project with cargo. **OK**
 
-2. Ingest stock quote data from an API.
-        The crate yahoo_finance_api provides a great starting point. Focus on the crate’s blocking API for now and specify the blocking feature on import.
-        Try different intervals and periods for the API, you want the highest possible resolution for your custom aggregations. What are its limits?
-        Using Rust’s Option and Result types, how can you handle API and connection errors without panicking? **OK**
+1.    **OK** Write tests to make sure evolving the code won’t break it:
+        Your min and max functions.
+        The simple moving average.
+        For calculating the relative and absolute differences over the entire period.
 
-3. Use command-line parameters to pass in the stock symbols and “from” date.
-        The Rust standard library offers a way to access command line arguments, but …
-        can a third-party crate make your life easier? **OK**
+2.    Transform your current code to be asynchronous:
+        Don’t forget to make your tests async too
+        Testing async functions works just as if they were running in the main function
+        Mixing async libraries may lead to strange errors and incompatibilities. Stick to something like async-std, tokio
+        yahoo_finance_api's default API is asnyc starting with version 0.3. Remove the blocking feature from your Cargo.toml to use it.
 
-4. Calculate performance indicators for the given period.
-- **OK** A period is the time between the “from” date and the current date
-- **OK** Aggregate the closing (adjclose) prices and find their minimum (fn min(series: &[f64]) -> Option<`f64`>) and maximum (fn max(series: &[f64]) -> Option<`f64`>) across the period. What data structures and types from the standard library can you use?
-- **OK** Calculate a simple moving average over the entire series. Here is the recommended function interface: fn n_window_sma(n: usize, series: &[f64]) -> Option<Vec<`f64`>>, where the series parameter is a std::slice with one value per day.
- - **OK**  fsUsing the function interface fn price_diff(series: &[f64]) -> Option<(f64, f64)>, return two price differences: one as a percentage of the starting price, one as an absolute difference between the first and the last price of the period.
+3.    Use actors to do the actual data processing:
+        Wrap your code to work in actors
+        Find ways to publish and subscribe to messages without explicit calls
+        There are several actor frameworks available - pick one that fits your async library; for example Xactor with async-std or Actix and tokio. Note: the solution will be based on Xactor.
 
-5. *OK* The company’s data pipeline expects a CSV file for input, so you decide to print the results in that format to stdout:
-        Display numbers (the min/max prices, change, and 30-day-average) with at most two decimal places
-        Use stderr to communicate any errors
-        The following columns are important to the company:
-            The date of the last quote retrieved
-            The stock symbol
-            The close price for the last quote
-            The change since the beginning (close) price of the period, expressed in percentage of that price
-            The period’s minimum price
-            The period’s maximum price
-            The last 30-day-average
-        Here is an example output:
+4.    Continuously fetch stock quotes for each symbol:
+        It’s critical to fetch the data for every 30 second interval
+        Don’t sleep the thread, multiple tasks are running there; find an actor-based alternative
+        Use one or more actors to run the previous data processing algorithms (min, max, 30 day simple moving average, price change).
+
+5.    The CTO liked the previous console output format, so you decide to keep it:
 
     period start,symbol,price,change %,min,max,30d avg
     2020-07-02T19:30:00+00:00,MSFT,$206.25,50.42%,$131.65,$207.85,$202.35
     2020-07-02T19:30:00+00:00,AAPL,$364.12,79.07%,$192.88,$371.38,$363.40
     2020-07-02T19:30:00+00:00,UBER,$30.68,-30.39%,$14.39,$44.73,$30.38
 
-6. *OK* Test with the following stock symbols: MSFT, GOOG, AAPL, UBER,IBM.
+6.    Polish your code.
+        Can you write more tests to document function limitations and usage?
+        Are you missing data points because of an increasing backlog?
+        Are there other ways to implement this data processing pipeline?
+
+7.    Run test with many symbols, like those contained in the S&P 500 index.
+        You can download a list of the S&P 500 May 2020 symbols here:
