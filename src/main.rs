@@ -122,6 +122,22 @@ fn generate_report_line(start_date: &str, ticker: &str, series: &[f64]) -> Strin
     )
 }
 
+fn print_report(stocks: Vec<String>, from: String) {
+    let date = from_to_date(&from).unwrap();
+
+    println!("period start,symbol,price,change %,min,max,30d avg");
+    for stock in &stocks {
+        match get_quote(&stock, &date) {
+            Ok(q) => {
+                let close_series: &[f64] = &q.quotes.iter().map(|x| x.close).collect::<Vec<f64>>();
+                let report_line = generate_report_line(&from, &stock, &close_series);
+                println!("{}", report_line);
+            }
+            Err(e) => println!("Could not retrieve stock information. Error {:?}", e),
+        }
+    }
+}
+
 fn main() {
     let matches = App::new("Stonks")
         .version("0.1.0")
@@ -145,22 +161,10 @@ fn main() {
         )
         .get_matches();
 
-    let from = matches.value_of("from").unwrap();
+    let from = matches.value_of("from").unwrap().to_string();
     let stocks = values_t!(matches.values_of("stocks"), String).unwrap_or_else(|e| e.exit());
-    let date = from_to_date(&from).unwrap();
 
-    // TODO move this to its own function
-    println!("period start,symbol,price,change %,min,max,30d avg");
-    for stock in &stocks {
-        match get_quote(&stock, &date) {
-            Ok(q) => {
-                let close_series: &[f64] = &q.quotes.iter().map(|x| x.close).collect::<Vec<f64>>();
-                let report_line = generate_report_line(&from, &stock, &close_series);
-                println!("{}", report_line);
-            }
-            Err(e) => println!("Could not retrieve stock information. Error {:?}", e),
-        }
-    }
+    print_report(stocks, from);
 }
 
 #[cfg(test)]
