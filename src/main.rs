@@ -1,4 +1,5 @@
 use anyhow::Result;
+use async_std;
 use chrono::DateTime;
 use clap::{values_t, App, Arg};
 use yahoo_finance_api as yahoo;
@@ -67,9 +68,9 @@ fn min(series: &[f64]) -> Option<f64> {
     min_found
 }
 
-fn get_quote(ticker: &str, period: &str) -> Result<Stock> {
+async fn get_quote(ticker: &str, period: &str) -> Result<Stock> {
     let provider = yahoo::YahooConnector::new();
-    let response = provider.get_quote_range(ticker, "1m", period)?;
+    let response = provider.get_quote_range(ticker, "1m", period).await?;
     let quotes = response.quotes()?;
     let stock = Stock {
         ticker: String::from(ticker),
@@ -122,12 +123,12 @@ fn generate_report_line(start_date: &str, ticker: &str, series: &[f64]) -> Strin
     )
 }
 
-fn print_report(stocks: Vec<String>, from: String) {
+async fn print_report(stocks: Vec<String>, from: String) {
     let date = from_to_date(&from).unwrap();
 
     println!("period start,symbol,price,change %,min,max,30d avg");
     for stock in &stocks {
-        match get_quote(&stock, &date) {
+        match get_quote(&stock, &date).await {
             Ok(q) => {
                 let close_series: &[f64] = &q.quotes.iter().map(|x| x.close).collect::<Vec<f64>>();
                 let report_line = generate_report_line(&from, &stock, &close_series);
@@ -138,7 +139,8 @@ fn print_report(stocks: Vec<String>, from: String) {
     }
 }
 
-fn main() {
+#[async_std::main]
+async fn main() -> () {
     let matches = App::new("Stonks")
         .version("0.1.0")
         .author("Zach Peters")
@@ -164,18 +166,18 @@ fn main() {
     let from = matches.value_of("from").unwrap().to_string();
     let stocks = values_t!(matches.values_of("stocks"), String).unwrap_or_else(|e| e.exit());
 
-    print_report(stocks, from);
+    print_report(stocks, from).await;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_get_basic_quote() {
+    #[async_std::test]
+    async fn test_get_basic_quote() {
         let ticker = "AAPL";
         let period = "1h";
-        let result = get_quote(ticker, period).unwrap();
+        let result = get_quote(ticker, period).await.unwrap();
         assert_eq!(result.ticker, "AAPL", "result should contain stock name");
         assert_eq!(result.quotes.len(), 60, "we should have exactly 60 results")
     }
