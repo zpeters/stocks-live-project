@@ -12,7 +12,7 @@ this is from Mannings "Building a Stock-Tracking CLI With Async Streams in Rust"
         The simple moving average.
         For calculating the relative and absolute differences over the entire period.
 
-2.    Transform your current code to be asynchronous:
+2.    **OK** Transform your current code to be asynchronous:
         Don’t forget to make your tests async too
         Testing async functions works just as if they were running in the main function
         Mixing async libraries may lead to strange errors and incompatibilities. Stick to something like async-std, tokio
