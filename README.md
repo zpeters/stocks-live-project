@@ -18,6 +18,8 @@ this is from Mannings "Building a Stock-Tracking CLI With Async Streams in Rust"
         Mixing async libraries may lead to strange errors and incompatibilities. Stick to something like async-std, tokio
         yahoo_finance_api's default API is asnyc starting with version 0.3. Remove the blocking feature from your Cargo.toml to use it.
 
+## from here on i ended up copying from the completed source.  i could not figure this out
+
 3.    Use actors to do the actual data processing:
         Wrap your code to work in actors
         Find ways to publish and subscribe to messages without explicit calls
